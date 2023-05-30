@@ -2,7 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using BepInEx.Preloader.RuntimeFixes;
+using BepInEx.Preloader.Socket;
+using MonoMod.Utils;
 
 namespace BepInEx.Preloader
 {
@@ -31,7 +34,11 @@ namespace BepInEx.Preloader
 			{
 				try
 				{
-					Assembly.LoadFile(Path.Combine(Paths.BepInExAssemblyDirectory, criticalAssembly));
+					string path = Path.Combine(Paths.BepInExAssemblyDirectory, criticalAssembly);
+
+                    TSSocketHandle.TrySendMessage($"加载关键程序集 : {path}");
+
+                    Assembly.LoadFile(path);
 				}
 				catch (Exception)
 				{
@@ -43,13 +50,13 @@ namespace BepInEx.Preloader
 
 		public static void PreloaderPreMain()
 		{
-			PlatformUtils.SetPlatform();
-
-			string bepinPath = Utility.ParentDirectory(Path.GetFullPath(EnvVars.DOORSTOP_INVOKE_DLL_PATH), 2);
-
+            TSSocketHandle.TrySendMessage($"预加载阶段");
+            PlatformUtils.SetPlatform();
+            TSSocketHandle.TrySendMessage($"当前平台-{PlatformHelper.Current}");
+            string bepinPath = Utility.ParentDirectory(Path.GetFullPath(EnvVars.DOORSTOP_INVOKE_DLL_PATH), 2);
 			Paths.SetExecutablePath(EnvVars.DOORSTOP_PROCESS_PATH, bepinPath, EnvVars.DOORSTOP_MANAGED_FOLDER_DIR, EnvVars.DOORSTOP_DLL_SEARCH_DIRS);
-
-			LoadCriticalAssemblies();
+            TSSocketHandle.TrySendMessage($"加载必要程序集");
+            LoadCriticalAssemblies();
 			AppDomain.CurrentDomain.AssemblyResolve += LocalResolve;
 			// Remove temporary resolver early so it won't override local resolver
 			AppDomain.CurrentDomain.AssemblyResolve -= Entrypoint.ResolveCurrentDirectory;
@@ -58,13 +65,16 @@ namespace BepInEx.Preloader
 
 		private static void PreloaderMain()
 		{
-			if (Preloader.ConfigApplyRuntimePatches.Value)
+            TSSocketHandle.TrySendMessage($"加载阶段");
+            if (Preloader.ConfigApplyRuntimePatches.Value)
 			{
-				XTermFix.Apply();
-				ConsoleSetOutFix.Apply();
+                TSSocketHandle.TrySendMessage($"平台兼容性修复,你可以通过配置文件禁止,通常情况下你不需要禁止该选项");
+                XTermFix.Apply();
+                TSSocketHandle.TrySendMessage($"日志兼容性修复");
+                ConsoleSetOutFix.Apply();
 			}
-
-			Preloader.Run();
+            TSSocketHandle.TrySendMessage($"加载程序启动");
+            Preloader.Run();
 		}
 
 		private static Assembly LocalResolve(object sender, ResolveEventArgs args)
@@ -101,16 +111,18 @@ namespace BepInEx.Preloader
 	internal static class Entrypoint
 	{
 		private static string preloaderPath;
+		private static TSBepInExSocket _socket;
 
-		/// <summary>
-		///     The main entrypoint of BepInEx, called from Doorstop.
-		/// </summary>
-		public static void Main()
+        /// <summary>
+        ///     The main entrypoint of BepInEx, called from Doorstop.
+        /// </summary>
+        public static void Main()
 		{
 			// We set it to the current directory first as a fallback, but try to use the same location as the .exe file.
 			string silentExceptionLog = $"preloader_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log";
+			TSSocketHandle.TryConnectTSClinet();
 
-			try
+            try
 			{
 				EnvVars.LoadVars();
 
@@ -131,13 +143,19 @@ namespace BepInEx.Preloader
 			catch (Exception ex)
 			{
 				File.WriteAllText(silentExceptionLog, ex.ToString());
-			}
+                TSSocketHandle.TrySendMessageError(ex.ToString());
+
+            }
 			finally
 			{
 				AppDomain.CurrentDomain.AssemblyResolve -= ResolveCurrentDirectory;
-			}
+				TSSocketHandle.TryDisconnectTsClient();
+
+            }
 		}
 
+ 
+ 
 		internal static Assembly ResolveCurrentDirectory(object sender, ResolveEventArgs args)
 		{
 			// Can't use Utils here because it's not yet resolved

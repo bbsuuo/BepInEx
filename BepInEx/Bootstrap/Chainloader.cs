@@ -439,7 +439,7 @@ namespace BepInEx.Bootstrap
 						invalidPlugins.Add(pluginGUID);
 						PluginInfos.Remove(pluginGUID);
 
-						Logger.LogError($"Error loading [{pluginInfo}] : {ex.Message}");
+						Logger.LogError($"Error loading [{pluginInfo}] On Type {pluginInfo.TypeName} : {ex.Message}");
 						if (ex is ReflectionTypeLoadException re)
 							Logger.LogDebug(TypeLoader.TypeLoadExceptionToString(re));
 						else

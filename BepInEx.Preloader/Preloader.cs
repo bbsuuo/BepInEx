@@ -31,11 +31,13 @@ namespace BepInEx.Preloader
 		public static void Run()
 		{
 			try
-			{
-				InitializeHarmony();
-				HarmonyInteropFix.Apply();
-
-				ConsoleManager.Initialize(false);
+			{				 
+                TSSocketHandle.TrySendMessage($"初始化Harmony");
+                InitializeHarmony();
+                TSSocketHandle.TrySendMessage($"Harmony补丁修复");
+                HarmonyInteropFix.Apply();
+                TSSocketHandle.TrySendMessage($"日志初始化");
+                ConsoleManager.Initialize(false);
 				AllocateConsole();
 
 				Utility.TryDo(() =>
@@ -67,8 +69,8 @@ namespace BepInEx.Preloader
 					var attribute = (BuildInfoAttribute)attributes[0];
 					Logger.LogMessage(attribute.Info);
 				}
-
-				Logger.LogInfo($"Running under Unity v{GetUnityVersion()}");
+                Logger.LogInfo($"TS-BepInEx version");
+                Logger.LogInfo($"Running under Unity v{GetUnityVersion()}");
 				Logger.LogInfo($"CLR runtime version: {Environment.Version}");
 				Logger.LogInfo($"Supports SRE: {Utility.CLRSupportsDynamicAssemblies}");
 				Logger.LogInfo($"System platform: {PlatformHelper.Current}");

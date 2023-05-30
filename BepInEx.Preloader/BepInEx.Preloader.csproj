@@ -64,6 +64,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeFixes\UnityPatches.cs" />
     <Compile Include="RuntimeFixes\XTermFix.cs" />
+    <Compile Include="Socket\Package.cs" />
+    <Compile Include="Socket\TSBepInExSocket.cs" />
+    <Compile Include="Socket\TSSocketHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BepInEx\BepInEx.csproj">
