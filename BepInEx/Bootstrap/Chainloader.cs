@@ -110,7 +110,16 @@ namespace BepInEx.Bootstrap
 			}
 
 			// Start logging
-			if (ConsoleManager.ConsoleEnabled && startConsole)
+			bool argEnable = false;
+			string[] args = Environment.GetCommandLineArgs();
+			foreach (var arg in args) 
+			{
+				if (arg == "-consolemode") 
+				{
+					argEnable = true;
+				}
+			}
+            if ((ConsoleManager.ConsoleEnabled && startConsole) || argEnable)
 			{
 				ConsoleManager.CreateConsole();
 				Logger.Listeners.Add(new ConsoleLogListener());

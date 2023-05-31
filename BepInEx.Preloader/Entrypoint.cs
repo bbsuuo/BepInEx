@@ -139,6 +139,8 @@ namespace BepInEx.Preloader
 				typeof(Entrypoint).Assembly.GetType($"BepInEx.Preloader.{nameof(PreloaderRunner)}")
 								  ?.GetMethod(nameof(PreloaderRunner.PreloaderPreMain))
 								  ?.Invoke(null, null);
+
+				TSSocketHandle.TrySendMessage("解析成功,启动游戏");
 			}
 			catch (Exception ex)
 			{

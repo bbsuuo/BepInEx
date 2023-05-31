@@ -53,7 +53,8 @@ namespace BepInEx
 			Logger = Logging.Logger.CreateLogSource(metadata.Name);
 
 			string configRoot = Chainloader.IsEditor ? "." : Paths.ConfigPath;
-			Config = new ConfigFile(Utility.CombinePaths(configRoot, metadata.GUID + ".cfg"), false, metadata);
+			Logger.LogInfo($"configRoot : {configRoot}");
+            Config = new ConfigFile(Utility.CombinePaths(configRoot, metadata.GUID + ".cfg"), false, metadata);
 		}
 	}
 }

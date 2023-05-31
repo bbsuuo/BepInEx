@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Preloader.Patching;
@@ -75,12 +76,17 @@ namespace BepInEx.Preloader
 				Logger.LogInfo($"Supports SRE: {Utility.CLRSupportsDynamicAssemblies}");
 				Logger.LogInfo($"System platform: {PlatformHelper.Current}");
 
-				if (runtimePatchException != null)
+                TSSocketHandle.TrySendMessage($"Running under Unity v{GetUnityVersion()}");
+                TSSocketHandle.TrySendMessage($"CLR runtime version: {Environment.Version}");
+                TSSocketHandle.TrySendMessage($"System platform: {PlatformHelper.Current}");
+
+                if (runtimePatchException != null)
 					Logger.LogWarning($"Failed to apply runtime patches for Mono. See more info in the output log. Error message: {runtimePatchException.Message}");
 
 				Logger.LogMessage("Preloader started");
+                TSSocketHandle.TrySendMessage($"加载插件开始");
 
-				AssemblyPatcher.AddPatcher(new PatcherPlugin
+                AssemblyPatcher.AddPatcher(new PatcherPlugin
 				{
 					TargetDLLs = () => new[] { ConfigEntrypointAssembly.Value },
 					Patcher = PatchEntrypoint,
@@ -97,7 +103,8 @@ namespace BepInEx.Preloader
 				AssemblyPatcher.PatchAndLoad(Paths.DllSearchPaths);
 				AssemblyPatcher.DisposePatchers();
 
-				Logger.LogMessage("Preloader finished");
+                TSSocketHandle.TrySendMessage($"加载插件结束");
+                Logger.LogMessage("Preloader finished");
 
 				Logger.Listeners.Remove(PreloaderLog);
 

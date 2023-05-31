@@ -13,8 +13,15 @@ namespace BepInEx.Preloader.RuntimeFixes
 	{
 		public static void Apply()
 		{
+			TSSocketHandle.TrySendMessage($"初始化HarmonyInterop {Paths.CachePath}");
 			HarmonyInterop.Initialize(Paths.CachePath);
-			Harmony.CreateAndPatchAll(typeof(HarmonyInteropFix), "org.bepinex.fixes.harmonyinterop");
+			TSSocketHandle.TrySendMessage($"创建修复补丁HarmonyInteropFix");
+			try {
+				Harmony.CreateAndPatchAll(typeof(HarmonyInteropFix), "org.bepinex.fixes.harmonyinterop");
+			}catch( Exception e ) 
+			{
+                TSSocketHandle.TrySendMessage($"{e}");
+            }
 		}
 
 		[HarmonyReversePatch]

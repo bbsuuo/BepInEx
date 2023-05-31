@@ -6,9 +6,11 @@ namespace BepInEx
 {
     public static class TSSocketHandle
     {
+        private static bool debugSocket = false;
         private static TSBepInExSocket _socket;
         internal static void TryConnectTSClinet()
         {
+            if(!debugSocket) return;
             try
             {
                 _socket = new TSBepInExSocket("127.0.0.1", 12555);
@@ -33,8 +35,9 @@ namespace BepInEx
 
         internal static void TryDisconnectTsClient()
         {
-            HarmonyLib.Tools.Logger.MessageReceived -= HarmonyLibMessageReceived;
+            if (!debugSocket) return;
             TrySendMessageWithHead("解析程序关闭");
+            HarmonyLib.Tools.Logger.MessageReceived -= HarmonyLibMessageReceived;
             try {
                 if(_socket!=null)
                 _socket.Disconnect();

@@ -120,7 +120,7 @@ namespace BepInEx.Preloader.Socket
             try
             {
                 Clearup();
-                _receiveThread.Join();
+                _receiveThread.Abort();
             }catch(Exception) { }
         }
     }
